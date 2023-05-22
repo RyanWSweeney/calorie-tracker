@@ -88,10 +88,10 @@ const Login = (props : LoginProps) => {
           <FormControlLabel control={<Checkbox name="remember" />} label={"Remember Me"} />
           <Button type={"submit"} color={"primary"} variant={"contained"} style={btnStyle} fullWidth>Sign In</Button>
           <Typography style={textStyle}>
-                <Link href="#">Forgot Password</Link>
+                <Link href={"../password"}>Forgot Password</Link>
           </Typography>
           <Typography style={textStyle}> Are you new here?
-                <Link href="#"> Sign Up</Link>
+                <Link href="../register"> Sign Up</Link>
           </Typography>
           </form>
       </Paper>
