@@ -50,7 +50,7 @@ const Register = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Login failed');
+                throw new Error('Register failed');
             }
 
             const data = await response.json();
@@ -60,7 +60,8 @@ const Register = () => {
                 // sessionStorage.setItem('token', data.token);
                 navigate('/login');
             } else {
-                throw new Error('Login failed');
+                console.log(data)
+                throw new Error('Register failed');
             }
         } catch (error) {
             // Handle the error

@@ -7,7 +7,10 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
 const fs = require('fs');
+const jwt = require("jsonwebtoken");
 const PASSWORD = fs.readFileSync('./PASSWORD', 'utf8');
+//read secret from SECRE_KEY
+const secret = fs.readFileSync('./SECRET_KEY', 'utf8');
 
 const uri = "mongodb+srv://rsweeney:" + PASSWORD + "@user-data-calorie-track.edtqlmi.mongodb.net/userinfo?retryWrites=true&w=majority";
 
@@ -47,31 +50,44 @@ const User = mongoose.model('User', userSchema);
 app.use(cors({
     origin: 'http://192.168.1.78:3000',
     optionsSuccessStatus: 200,
-    credentials: true
+    credentials: true,
 }));
 
 app.use(express.json());
-//read secret from SECRE_KEY
-const secret = fs.readFileSync('./SECRET_KEY', 'utf8');
-app.use(session({secret: secret, resave: false, saveUninitialized: true}));
+
+app.use(session({
+    secret: secret,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 passport.use('local', new LocalStrategy(
     {
-        usernameField: 'email',
+        usernameField: 'username',
         passwordField: 'password'
     },
-    function(email, password, done) {
-        User.findOne({ email: email }, function(err, user) {
-            if (err) { return done(err); }
+    async function (username, password, done) {
+        console.log('local strategy');
+        await db.collection('users').findOne({username: username}, function (err, user) {
+            if (err) {
+                return done(err);
+            }
             if (!user) {
-                return done(null, false, { message: 'Incorrect email.' });
+                console.log('Incorrect email');
+                return done(null, false, {message: 'Incorrect email or password.'});
             }
 
-            bcrypt.compare(password, user.password, function(err, res) {
+            bcrypt.compare(password, user.password, function (err, res) {
                 if (err) return done(err);
                 if (res === false) {
-                    return done(null, false, { message: 'Incorrect password.' });
+                    console.log('Incorrect password');
+                    return done(null, false, {message: 'Incorrect emaile or password'});
                 } else {
+                    //return user if password matches
+                    console.log('correct password');
                     return done(null, user);
                 }
             });
@@ -81,21 +97,26 @@ passport.use('local', new LocalStrategy(
 
 
 passport.serializeUser(function(user, done) {
-    done(null, user.id);
+    done(null, user._id);
 });
 
-passport.deserializeUser(function(id, done) {
-    User.findById(id, function(err, user) {
+passport.deserializeUser(async function (id, done) {
+    await db.collection('users').findOne({_id: id}, function (err, user) {
         done(err, user);
     });
 });
 
 //routes
 //Login route
-app.post('/api/login', passport.authenticate('local', { successRedirect: '/',
-    failureRedirect: '/login',
-    failureFlash: true }));
-
+app.post ("/api/login", passport.authenticate('local'), (req, res) => {
+    console.log("login route");
+    console.log(req.body);
+    // If this function gets called, authentication was successful.
+    // `req.user` contains the authenticated user.
+    //generate jwt token
+    const token = jwt.sign({ _id: req.user._id }, secret);
+    res.json({ status: 'success', message: 'Authenticated successfully', token: token });
+});
 //Logout route
 app.get('/api/logout', function(req, res){
     req.logout();
@@ -108,11 +129,36 @@ app.post('/api/register', async (req, res) => {
     console.log(req.body)
     const hash = await bcrypt.hash(password, 10);
     const user = new User({ username, password: hash, email, phone, address, city, state, zip, country });
+    //check if username or email already exists
+    if(await db.collection('users').find({$or: [{username: username}, {email: email}]}).count() > 0) {
+        console.log("Username or email already exists")
+        res.status(400).json({ status: 'error', message: 'Username or email already exists' });
+        return;
+    }
     try {
         await user.save();
         res.status(201).json({ status: 'success', message: 'User created' });
     } catch (err) {
         res.status(400).json({ status: 'error', message: err.message });
+    }
+});
+
+app.post('/api/validateToken', async (req, res) => {
+    const token = req.body.token;
+    console.log(token);
+    if (!token) {
+        res.status(401).json({ status: 'error', message: 'No token provided' });
+    }
+    try {
+        const decoded = jwt.verify(token, secret);
+        const user = await db.collection('users').findOne({_id: decoded._id});
+        if (user) {
+            res.status(200).json({ status: 'success', message: 'Token is valid' });
+        } else {
+            res.status(401).json({ status: 'error', message: 'Token is invalid' });
+        }
+    } catch (err) {
+        res.status(401).json({ status: 'error', message: 'Token is invalid' });
     }
 });
 

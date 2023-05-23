@@ -25,7 +25,9 @@ function App() {
                 <Route path={"/login"} element={<Login onLogin={handleLogin}/>}/>
                 <Route path={"/password"} element={<ResetPassword/>}/>
                 <Route path={"/register"} element={<Register/>}/>
-                <Route path="/dashboard" element={sessionStorage.getItem("token") != null ? <Dashboard /> : <Navigate to="/login" />} />
+                {/*unnecessary now that I added withAuth*/}
+                {/*<Route path="/dashboard" element={sessionStorage.getItem("token") != null ? <Dashboard /> : <Navigate to="/login" />} />*/}
+                <Route path={"/dashboard"} element={<Dashboard/>}/>
             </Routes>
         </BrowserRouter>
         {/*<Login/>*/}

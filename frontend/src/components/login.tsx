@@ -25,7 +25,7 @@ const Login = (props : LoginProps) => {
         console.log("Login")
         // You can now use these values to authenticate the user
         try {
-            const response = await fetch('http://localhost:9229/api/login', {
+            const response = await fetch('http://192.168.1.78:9229/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -41,6 +41,8 @@ app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true
 }));
+
+app.use(express.json());
 //secret key is stored in file called SECRET_KEY.txt
 //open file and save secret
 const SECRET_KEY = fs.readFileSync('./SECRET_KEY', 'utf8');
