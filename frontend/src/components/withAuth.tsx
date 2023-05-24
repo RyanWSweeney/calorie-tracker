@@ -8,18 +8,21 @@ const withAuth = (ComponentToProtect: FunctionComponent) => {
         const navigate = useNavigate();
 
         useEffect(() => {
-            fetch('/api/validateToken', {
+            fetch('http://192.168.1.78:9229/api/validateToken', {
+                method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                 }
             })
-                .then(response => {
-                    console.log(response)
-                    if (response.statusText === 'success') {
-                        console.log('Token validated');
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log('Token validated', data.message);
                         setLoading(false);
                     } else {
-                        throw new Error('Token validation failed');
+                        console.log('Token validation failed', data.message)
+                        setLoading(false);
+                        setRedirect(true);
                     }
                 })
                 .catch(error => {
@@ -33,7 +36,7 @@ const withAuth = (ComponentToProtect: FunctionComponent) => {
             return null; // You could also return a loading spinner or similar here
         }
         if (redirect) {
-            navigate('/login')
+            // navigate('/login')
             return null;
         }
         return <ComponentToProtect {...props} />;

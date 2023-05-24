@@ -8,6 +8,7 @@ const LocalStrategy = require('passport-local').Strategy;
 
 const fs = require('fs');
 const jwt = require("jsonwebtoken");
+const {ObjectId} = require("mongodb");
 const PASSWORD = fs.readFileSync('./PASSWORD', 'utf8');
 //read secret from SECRE_KEY
 const secret = fs.readFileSync('./SECRET_KEY', 'utf8');
@@ -144,23 +145,49 @@ app.post('/api/register', async (req, res) => {
 });
 
 app.post('/api/validateToken', async (req, res) => {
-    const token = req.body.token;
+    const token = req.headers.authorization?.split(' ')[1];
     console.log(token);
     if (!token) {
-        res.status(401).json({ status: 'error', message: 'No token provided' });
+        return res.status(401).json({ status: 'error', message: 'No token provided' });
     }
     try {
         const decoded = jwt.verify(token, secret);
-        const user = await db.collection('users').findOne({_id: decoded._id});
+        console.log(decoded);
+        const user = await db.collection('users').find({_id: decoded._id});
+        // console.log(user);
         if (user) {
-            res.status(200).json({ status: 'success', message: 'Token is valid' });
+            return res.status(200).json({ status: 'success', message: 'Token is valid' });
         } else {
-            res.status(401).json({ status: 'error', message: 'Token is invalid' });
+            return res.status(401).json({ status: 'error', message: 'Token is invalid' });
         }
     } catch (err) {
-        res.status(401).json({ status: 'error', message: 'Token is invalid' });
+        return res.status(401).json({ status: 'error', message: 'Token is invalid' });
     }
 });
 
+app.get('/api/userInfo', async (req, res) => {
+    try {
+        //validate token
+        const token = req.headers.authorization?.split(' ')[1];
+        console.log('in userInfo');
+        if (!token) {
+            return res.status(401).json({status: 'error', message: 'No token provided'});
+        }
+        const decoded = jwt.verify(token, secret);
+        console.log(decoded);
+        console.log(decoded._id);
+        const user = await db.collection('users').findOne({_id: new ObjectId(decoded._id)});
+        if (user) {
+            return res.status(200).json({status: 'success', message: 'Token is valid', user: user});
+        } else {
+            console.log('User not found');
+            return res.status(401).json({status: 'error', message: 'User not found'});
+        }
+    } catch (err) {
+        console.log('Token is invalid');
+        console.log(err);
+        return res.status(401).json({status: 'error', message: 'Token is invalid'});
+    }
+});
 
 app.listen(9229, '0.0.0.0', () => console.log('Server started on port 9229'));
