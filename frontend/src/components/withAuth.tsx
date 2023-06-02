@@ -8,7 +8,7 @@ const withAuth = (ComponentToProtect: FunctionComponent) => {
         const navigate = useNavigate();
 
         useEffect(() => {
-            fetch('http://192.168.1.78:9229/api/validateToken', {
+            fetch('http://' + process.env.REACT_APP_IP + '/api/validateToken', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${sessionStorage.getItem('token')}`

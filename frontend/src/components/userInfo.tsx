@@ -18,7 +18,7 @@ const UserInfo: React.FunctionComponent = () => {
     const [user, setUser] = useState<UserInfo | null>(null);
 
     useEffect(() => {
-        fetch('http://192.168.1.78:9229/api/userInfo', {
+        fetch('http://' + process.env.REACT_APP_IP + '/api/userInfo', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${sessionStorage.getItem('token')}`

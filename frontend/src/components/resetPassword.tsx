@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {Button, Grid, Paper, TextField} from "@material-ui/core";
+import {Button, Grid, Paper, TextField} from "@mui/material";
 
 const paperStyle = {padding: 20, height: '70vh', width: 280, margin: "20px auto"};
 const textStyle = {margin: '8px 0'};

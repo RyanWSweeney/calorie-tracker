@@ -1,5 +1,5 @@
 import React, {FormEvent, useState} from "react";
-import {Avatar, Grid, Paper, TextField, Checkbox, FormControlLabel, Button, Typography, Link} from "@material-ui/core";
+import {Avatar, Grid, Paper, TextField, Checkbox, FormControlLabel, Button, Typography, Link} from "@mui/material";
 import LockIcon from '@mui/icons-material/Lock';
 import PropTypes from "prop-types";
 import {useNavigate} from "react-router-dom";
@@ -25,7 +25,7 @@ const Login = (props : LoginProps) => {
         console.log("Login")
         // You can now use these values to authenticate the user
         try {
-            const response = await fetch('http://192.168.1.78:9229/api/login', {
+            const response = await fetch('http://' + process.env.REACT_APP_IP + '/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

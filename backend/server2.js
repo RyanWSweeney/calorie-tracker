@@ -6,14 +6,15 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
-const fs = require('fs');
 const jwt = require("jsonwebtoken");
 const {ObjectId} = require("mongodb");
-const PASSWORD = fs.readFileSync('./PASSWORD', 'utf8');
-//read secret from SECRE_KEY
-const secret = fs.readFileSync('./SECRET_KEY', 'utf8');
 
-const uri = "mongodb+srv://rsweeney:" + PASSWORD + "@user-data-calorie-track.edtqlmi.mongodb.net/userinfo?retryWrites=true&w=majority";
+require('dotenv').config();
+
+password = process.env.PASSWORD;
+secret = process.env.SECRET_KEY;
+
+const uri = "mongodb+srv://rsweeney:" + password + "@user-data-calorie-track.edtqlmi.mongodb.net/userinfo?retryWrites=true&w=majority";
 
 const app = express();
 
@@ -49,7 +50,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 app.use(cors({
-    origin: 'http://192.168.1.78:3000',
+    origin: 'http://' + process.env.FRONTEND_URL,
     optionsSuccessStatus: 200,
     credentials: true,
 }));

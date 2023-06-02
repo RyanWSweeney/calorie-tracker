@@ -1,6 +1,6 @@
 import React, {FormEvent, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {Avatar, Grid, Paper, TextField, Checkbox, FormControlLabel, Button, Typography, Link} from "@material-ui/core";
+import {Avatar, Grid, Paper, TextField, Checkbox, FormControlLabel, Button, Typography, Link} from "@mui/material";
 
 const Register = () => {
     const paperStyle = {padding: 20, height: '95vh', width: 280, margin: "20px auto"};
@@ -28,7 +28,7 @@ const Register = () => {
         console.log("Register")
         // You can now use these values to authenticate the user
         try {
-            const response = await fetch('http://192.168.1.78:9229/api/register', {
+            const response = await fetch('http://' + process.env.REACT_APP_IP + '/api/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
