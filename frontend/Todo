@@ -10,5 +10,5 @@ Add edit user info page
 
 Miscellaneous-------------------------
 Handle errors from backend (incorrect password etc.)
-
+Make register page more user friendly(dropdown menus for certain data)
 

@@ -8,12 +8,41 @@ const textStyle = {margin: '8px 0'};
 
 
 export const ResetPassword = () => {
+
+    const handleReset = async (event: any) => {
+
+        event.preventDefault();
+        console.log("Reset Password");
+        try{
+            const response = await fetch('http://' + process.env.REACT_APP_IP + '/api/resetPassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username }),
+                credentials: 'include', // Required to include the cookie
+            });
+
+            const data = await response.json();
+            console.log(data);
+            if(data.status === 'success') {
+                //redirect to password reset page and save jwt token that validates this transaction
+                sessionStorage.setItem('pass-token', data.token);
+                navigate('/resetPassword');
+            }
+        }
+        catch(error){
+            console.error('Error:', error);
+        }
+    }
+
+    const navigate = useNavigate();
     const [username, setUsername] = useState('');
     return(
     <Grid>
         <Paper elevation={10} style={paperStyle}>
             <h2>Reset Password</h2>
-            <form>
+            <form onSubmit={handleReset}>
                 <TextField
                     label="username"
                     variant={"standard"}
