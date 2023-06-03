@@ -1,0 +1,14 @@
+MainFeatures-------------------------
+Add dashboard MyDay functionality (Macros, etc.)
+Add functionality to add a food to your day
+Add a createMeal functionality to allow users to create their own meals with multiple foods
+Add functionality to add a meal to your day
+
+Add forgotPassword functionality
+
+Add edit user info page
+
+Miscellaneous-------------------------
+Handle errors from backend (incorrect password etc.)
+
+
