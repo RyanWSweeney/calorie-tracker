@@ -1,10 +1,7 @@
 import React from 'react';
 import './App.css';
-import {BrowserRouter, Route, Routes, Navigate} from "react-router-dom";
-import Login from "./components/login";
-import ResetPassword from "./components/resetPassword";
-import Register from "./components/register";
-import Dashboard from "./components/dashboard";
+import {BrowserRouter} from "react-router-dom";
+import AppBody from "./components/appBody";
 
 function App() {
 
@@ -17,22 +14,13 @@ function App() {
         }
     }
 
-  return (
-    <div className="App">
-        <BrowserRouter>
-            <Routes>
-                <Route path={"/"} element={<Navigate to={"/login"}/>}/>
-                <Route path={"/login"} element={<Login onLogin={handleLogin}/>}/>
-                <Route path={"/password"} element={<ResetPassword/>}/>
-                <Route path={"/register"} element={<Register/>}/>
-                {/*unnecessary now that I added withAuth*/}
-                {/*<Route path="/dashboard" element={sessionStorage.getItem("token") != null ? <Dashboard /> : <Navigate to="/login" />} />*/}
-                <Route path={"/dashboard"} element={<Dashboard/>}/>
-            </Routes>
-        </BrowserRouter>
-        {/*<Login/>*/}
-    </div>
-  );
+    return (
+        <div className="App">
+            <BrowserRouter>
+                <AppBody onLogin={handleLogin} />
+            </BrowserRouter>
+        </div>
+    );
 }
 
 export default App;
