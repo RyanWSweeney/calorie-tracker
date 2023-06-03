@@ -36,7 +36,7 @@ const withAuth = (ComponentToProtect: FunctionComponent) => {
             return null; // You could also return a loading spinner or similar here
         }
         if (redirect) {
-            // navigate('/login')
+            navigate('/login');
             return null;
         }
         return <ComponentToProtect {...props} />;

@@ -6,6 +6,8 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
+const nodemailer = require('nodemailer');
+
 const jwt = require("jsonwebtoken");
 const {ObjectId} = require("mongodb");
 
@@ -142,6 +144,82 @@ app.post('/api/register', async (req, res) => {
         res.status(201).json({ status: 'success', message: 'User created' });
     } catch (err) {
         res.status(400).json({ status: 'error', message: err.message });
+    }
+});
+
+app.post('/api/reqNewPassword', async (req, res) => {
+    const { username } = req.body;
+    // find user from mongo
+    const user = await db.collection('users').findOne({username: username});
+    if (user) {
+        console.log("Username exists");
+        //generate jwt with userid of user from mongodb
+        const token = jwt.sign({ _id: user._id }, secret, { expiresIn: '1h' }); // Consider adding expiration to this token
+
+        // Send the token to the user's email address as a password reset link
+        let transporter = nodemailer.createTransport({
+            host: 'mail.ryansweeney.org',
+            port : 465,
+            secure: true,
+            auth: {
+                user: process.env.EMAIL, // your email
+                pass: process.env.EMAIL_PASSWORD  // your email password
+            }
+        });
+
+        let mailOptions = {
+            from: process.env.EMAIL,
+            to: user.email,
+            subject: 'Password Reset Link',
+            text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+                   Please click on the following link, or paste this into your browser to complete the process within one hour of receiving it:\n\n
+                   http://${process.env.FRONTEND_URL}/resetPassword/${token}\n\n
+                   If you did not request this, please ignore this email and your password will remain unchanged.\n`
+        };
+
+        transporter.sendMail(mailOptions, (err, response) => {
+            if (err) {
+                console.error('there was an error: ', err);
+            } else {
+                console.log('here is the res: ', response);
+                res.status(200).json({status: 'success', message: 'recovery email sent'});
+            }
+        });
+
+    } else {
+        res.status(400).json({ status: 'error', message: 'Username does not exist' });
+    }
+});
+
+app.post('/api/verifyPasswordReset', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    try {
+        const decoded = jwt.verify(token, secret);
+        if(decoded.exp < Date.now() / 1000) {
+            res.status(400).json({ status: 'error', message: 'Token expired' });
+        } else {
+            res.status(200).json({ status: 'success', message: 'Token valid' });
+        }
+    } catch (err) {
+        res.status(400).json({ status: 'error', message: 'Invalid token' });
+    }
+});
+
+app.post('/api/resetPassword', async (req, res) => {
+    const { password, token } = req.body;
+    try {
+        const decoded = jwt.verify(token, secret);
+        const hash = await bcrypt.hash(password, 10);
+        const result = await db.collection('users').updateOne({_id: new ObjectId(decoded._id)}, {$set: {password: hash}});
+        console.log(result);
+        if(result.modifiedCount === 0) {
+            res.status(400).json({ status: 'error', message: 'Password not updated' });
+        }else{
+            res.status(200).json({ status: 'success', message: 'Password updated' });
+        }
+    }catch (err) {
+        console.log(err);
+        res.status(400).json({ status: 'error', message: 'Invalid token' });
     }
 });
 

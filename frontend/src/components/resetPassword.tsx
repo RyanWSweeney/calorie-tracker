@@ -8,13 +8,17 @@ const textStyle = {margin: '8px 0'};
 
 
 export const ResetPassword = () => {
+    const navigate = useNavigate();
+    const [username, setUsername] = useState('');
+    const [message, setMessage] = useState(''); //display text saying if an account exists with that username, an email has been sent to reset the password
+
 
     const handleReset = async (event: any) => {
 
         event.preventDefault();
         console.log("Reset Password");
         try{
-            const response = await fetch('http://' + process.env.REACT_APP_IP + '/api/resetPassword', {
+            const response = await fetch('http://' + process.env.REACT_APP_IP + '/api/reqNewPassword', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -26,18 +30,14 @@ export const ResetPassword = () => {
             const data = await response.json();
             console.log(data);
             if(data.status === 'success') {
-                //redirect to password reset page and save jwt token that validates this transaction
-                sessionStorage.setItem('pass-token', data.token);
-                navigate('/resetPassword');
+                //display text saying if an account exists with that username, an email has been sent to reset the password
+                setMessage("If an account exists with that username, an email has been sent to reset the password")
             }
         }
         catch(error){
             console.error('Error:', error);
         }
     }
-
-    const navigate = useNavigate();
-    const [username, setUsername] = useState('');
     return(
     <Grid>
         <Paper elevation={10} style={paperStyle}>
@@ -55,6 +55,7 @@ export const ResetPassword = () => {
                 </TextField>
                 <Button type={"submit"} color={"primary"} variant={"contained"} fullWidth>Reset Password</Button>
             </form>
+            <p>{message}</p>
         </Paper>
     </Grid>);
 }
