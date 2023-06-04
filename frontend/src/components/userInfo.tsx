@@ -143,7 +143,8 @@ const UserInfo: React.FunctionComponent = () => {
         }else if(response.status === 401) {
             setError("You are not authorized to do that");
         }else if (response.status === 400) {
-            setError("Email already in use");
+            const data = await response.json();
+            setError(data.message);
         }else{
             setError("Unknown error");
         }

@@ -286,6 +286,8 @@ app.post('/api/updateUserInfo', async (req, res) => {
         // check if email exists in db for other users
         const existingUser = await db.collection('users').findOne({ email });
         if (existingUser && existingUser._id.toString() !== decoded._id) {
+            console.log(existingUser._id.toString());
+            console.log(decoded._id.toString());
             console.log('Email already exists on another user');
             return res.status(400).json({ status: 'error', message: 'Email already exists on another user' });
         }
@@ -310,7 +312,7 @@ app.post('/api/updateUserInfo', async (req, res) => {
             );
             console.log(result);
             if (result.modifiedCount === 0) {
-                return res.status(400).json({ status: 'error', message: 'User not updated' });
+                return res.status(400).json({ status: 'error', message: 'Nothing to update' });
             } else {
                 return res.status(200).json({ status: 'success', message: 'User updated' });
             }
