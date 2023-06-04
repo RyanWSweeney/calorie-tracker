@@ -41,6 +41,8 @@ const userSchema = new mongoose.Schema({
     username: String,
     password: String,
     email: String,
+    firstName: String,
+    lastName: String,
     phone: String,
     address: String,
     city: String,
@@ -129,10 +131,10 @@ app.get('/api/logout', function(req, res){
 
 //register route
 app.post('/api/register', async (req, res) => {
-    const { username, password, email, phone, address, city, state, zip, country } = req.body;
+    const { username, password, email, firstName, lastName, phone, address, city, state, zip, country } = req.body;
     console.log(req.body)
     const hash = await bcrypt.hash(password, 10);
-    const user = new User({ username, password: hash, email, phone, address, city, state, zip, country });
+    const user = new User({ username, password: hash, email, firstName, lastName, phone, address, city, state, zip, country });
     //check if username or email already exists
     if(await db.collection('users').find({$or: [{username: username}, {email: email}]}).count() > 0) {
         console.log("Username or email already exists")
@@ -267,6 +269,77 @@ app.get('/api/userInfo', async (req, res) => {
         console.log(err);
         return res.status(401).json({status: 'error', message: 'Token is invalid'});
     }
+});
+
+app.post('/api/updateUserInfo', async (req, res) => {
+    try {
+        // validate token
+        const token = req.headers.authorization?.split(' ')[1];
+        console.log('in updateUserInfo');
+        if (!token) {
+            return res.status(401).json({ status: 'error', message: 'No token provided' });
+        }
+        const decoded = jwt.verify(token, secret);
+        console.log(decoded);
+        console.log(decoded._id);
+        const { email, firstName, lastName, address, city, state, zip, phone, country } = req.body;
+        // check if email exists in db for other users
+        const existingUser = await db.collection('users').findOne({ email });
+        if (existingUser && existingUser._id.toString() !== decoded._id) {
+            console.log('Email already exists on another user');
+            return res.status(400).json({ status: 'error', message: 'Email already exists on another user' });
+        }
+        const user = await db.collection('users').findOne({ _id: new ObjectId(decoded._id) });
+        if (user) {
+            console.log('User found');
+            const result = await db.collection('users').updateOne(
+                { _id: new ObjectId(decoded._id) },
+                {
+                    $set: {
+                        email: email,
+                        firstName: firstName,
+                        lastName: lastName,
+                        address: address,
+                        city: city,
+                        state: state,
+                        zip: zip,
+                        phone: phone,
+                        country: country,
+                    },
+                }
+            );
+            console.log(result);
+            if (result.modifiedCount === 0) {
+                return res.status(400).json({ status: 'error', message: 'User not updated' });
+            } else {
+                return res.status(200).json({ status: 'success', message: 'User updated' });
+            }
+        } else {
+            console.log('User not found');
+            return res.status(401).json({ status: 'error', message: 'User not found' });
+        }
+    } catch (err) {
+        console.log('Token is invalid');
+        console.log(err);
+        return res.status(401).json({ status: 'error', message: 'Token is invalid' });
+    }
+});
+
+app.get('/api/testOpenFoodFacts', async (req, res) => {
+    fetch('https://us.openfoodfacts.org/cgi/search.pl?action=process&tagtype_0=categories&tag_contains_0=contains&tag_0=breakfast_cereals&json=true', {
+        headers: {
+            'User-Agent': 'Calorify - Web - Version 1.0 - https://github.com/RyanWSweeney/calorie-tracker'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            res.json(data);
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({error: 'An error occurred while fetching data from Open Food Facts API.'});
+        });
 });
 
 app.listen(9229, '0.0.0.0', () => console.log('Server started on port 9229'));

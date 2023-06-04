@@ -4,17 +4,17 @@ Add functionality to add a food to your day
 Add a createMeal functionality to allow users to create their own meals with multiple foods
 Add functionality to add a meal to your day
 
-Add edit user info page
-
-Add functionality to the remember me checkbox
 
 Miscellaneous-------------------------
 Handle errors from backend (incorrect password etc.)
 Make register page more user friendly(dropdown menus for certain data)
 Add https functionality with SSL Certificate
 Clean up password reset ui
+Add functionality to the remember me checkbox
+Add data sanitation on backend for registering a new user
 
 
 
 Completed-------------------------
 Add forgotPassword functionality
+Add edit user info page
